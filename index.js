@@ -5,12 +5,7 @@ const express = require('express'),
       Sequelize = require('sequelize');
 
 var app = express();
-    sequelize = new Sequelize('ela', 'ela', '', { dialect: 'postgres' });
-
-var Message = sequelize.define('message', {
-  title: Sequelize.TEXT,
-  body: Sequelize.TEXT
-});
+    sequelize = new Sequelize('bulletinboard', process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, { dialect: 'postgres' });
 
 app.set('view engine', 'pug');
 
@@ -20,16 +15,32 @@ app.use(morgan('dev'));
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
+var Message = sequelize.define('message', {
+  title: Sequelize.STRING,
+  body: Sequelize.TEXT
+});
+
 app.get('/', (request, response) => {
-  response.redirect('/new');
+  Message.findAll({ order: 'id ASC' }).then((messages) => {
+    response.render('messages/index', { messages: messages });
+  });
 });
 
-app.get('/index', (request, response) => {
-  response.redirect('/index');
+app.get('/new', (request, response) => {
+  response.render('messages/new');
 });
 
-app.post('/', (request, response) => {
 
+
+app.post('/messages', (request, response) => {
+  console.log('message posted');
+  if (request.body.title) {
+    Message.create(request.body).then(() => {
+      response.redirect('/');
+    });
+  } else {
+    response.redirect('/new');
+  }
 });
 
 sequelize.sync().then(() => {

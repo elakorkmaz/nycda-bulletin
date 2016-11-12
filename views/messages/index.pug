@@ -1,0 +1,12 @@
+extends ../application.pug
+
+block content
+  .container
+  h1 Messages
+  hr
+  each message in messages
+    .card.card-block
+      .row
+        .col-xs-12.col-md-8
+          h2= message.title
+          p= message.body
